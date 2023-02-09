@@ -1,0 +1,44 @@
+import hashlib
+
+class Column:
+    def __init__(self, name, data_type, is_unique=False):
+        self.name = name
+        self.data_type = data_type
+        self.is_unique = is_unique
+
+class Table:
+    def __init__(self, name, columns, primary_key):
+        self.name = name
+        self.columns = columns
+        self.primary_key = primary_key
+        self.rows = []
+
+        self.btree_index = {}
+        self.hash_index = {}
+
+        # Create the index for the primary key column
+        for row in self.rows:
+            self.btree_index[row[primary_key]] = row
+
+    def insert_row(self, row):
+        # Insert the row into the table
+        self.rows.append(row)
+
+        # Update the BTree index
+        for column in self.columns:
+            if column.is_unique:
+                self.btree_index[row[column.name]] = row
+
+        # Update the Hash index
+        if self.primary_key in row:
+            hash_value = int(hashlib.sha256(row[self.primary_key].encode()).hexdigest(), 16) % (10 ** 8)
+            self.hash_index[hash_value] = row
+
+# Example usage
+table = Table("example_table", [
+    Column("column1", str, True),
+    Column("column2", str, False),
+    Column("column3", int, True),
+], "column1")
+
+table.insert_row({"column1": "value1", "column2": "value2", "column3": 123})
