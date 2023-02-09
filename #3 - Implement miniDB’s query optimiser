@@ -1,0 +1,106 @@
+class QueryPlan:
+    def __init__(self, relation, selections, projections):
+        # Initialize the class with the relation name, list of selections, and list of projections
+        self.relation = relation
+        self.selections = selections
+        self.projections = projections
+
+    def __str__(self):
+        # Returns a string representation of the QueryPlan object
+        return f"QueryPlan({self.relation}, {self.selections}, {self.projections})"
+
+
+class EquivalenceClass:
+    def __init__(self, relation, selections, projections):
+        # Initialize the class with the relation name, list of selections, and list of projections
+        self.relation = relation
+        self.selections = selections
+        self.projections = projections
+
+    def __str__(self):
+        # Returns a string representation of the EquivalenceClass object
+        return f"EquivalenceClass({self.relation}, {self.selections}, {self.projections})"
+
+
+class MiniDB:
+    def __init__(self, data):
+        # Initialize the class with a dictionary of data
+        self.data = data
+        self.equivalence_classes = []
+
+    def build_equivalence_classes(self):
+        """Build equivalent query plans based on respective RA expressions"""
+        for relation, relation_data in self.data.items():
+            for selections in relation_data["selections"]:
+                for projections in relation_data["projections"]:
+                    # Create an EquivalenceClass object for each combination of relation, selections, and projections
+                    self.equivalence_classes.append(
+                        EquivalenceClass(relation, selections, projections)
+                    )
+
+    def choose_optimal_plan(self, query_plan):
+        """Choose the optimal query execution plan using a cost-based evaluation"""
+        min_cost = float("inf")
+        optimal_plan = None
+        for eq_class in self.equivalence_classes:
+            # Evaluate the cost of each EquivalenceClass
+            cost = self.evaluate_cost(eq_class, query_plan)
+            if cost < min_cost:
+                # Keep track of the EquivalenceClass with the lowest cost
+                min_cost = cost
+                optimal_plan = eq_class
+
+        # Return the optimal plan
+        return optimal_plan
+
+    def evaluate_cost(self, eq_class, query_plan):
+        """Evaluate the cost of executing a query plan"""
+        # TODO: Implement a cost-based evaluation function
+        return 0
+
+    def execute_query(self, query_plan):
+        """Execute a query against the miniDB"""
+        # Choose the optimal plan
+        optimal_plan = self.choose_optimal_plan(query_plan)
+        # TODO: Implement executing the query based on the optimal plan
+        return []
+
+
+# Example usage
+data = {
+    "employees": {
+        "selections": [
+            ["age", ">", 30],
+            ["salary", ">", 50000],
+        ],
+        "projections": [
+            ["name"],
+            ["age", "salary"],
+        ],
+    },
+    "departments": {
+                "selections": [
+            ["budget", ">", 100000],
+            ["location", "=", "San Francisco"],
+        ],
+        "projections": [
+            ["name"],
+            ["budget", "location"],
+        ],
+    },
+}
+
+# Initialize the miniDB with the example data
+minidb = MiniDB(data)
+
+# Build the equivalence classes
+minidb.build_equivalence_classes()
+
+# Define a query plan
+query_plan = QueryPlan("employees", ["age", ">", 30], ["name", "age"])
+
+# Execute the query
+result = minidb.execute_query(query_plan)
+
+# Print the result
+print(result)
